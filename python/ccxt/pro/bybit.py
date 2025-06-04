@@ -1627,7 +1627,7 @@ class bybit(ccxt.async_support.bybit):
         await self.authenticate(url)
         topicsByMarket: dict = {
             'spot': ['order', 'stopOrder'],
-            'unified': ['order'],
+            'unified': ['order.linear'],
             'usdc': ['user.openapi.perp.order'],
         }
         topics = self.safe_value(topicsByMarket, self.get_private_type(url))
