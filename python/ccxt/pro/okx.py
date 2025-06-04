@@ -1786,9 +1786,8 @@ class okx(ccxt.async_support.okx):
         ordersLength = len(orders)
         if ordersLength > 0:
             limit = self.safe_integer(self.options, 'ordersLimit', 1000)
-            if self.orders is None:
-                self.orders = ArrayCacheBySymbolById(limit)
-                self.triggerOrders = ArrayCacheBySymbolById(limit)
+            self.orders = ArrayCacheBySymbolById(limit)
+            self.triggerOrders = ArrayCacheBySymbolById(limit)
             stored = self.triggerOrders if (channel == 'orders-algo') else self.orders
             marketIds = []
             parsed = self.parse_orders(orders)
