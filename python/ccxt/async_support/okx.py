@@ -3629,6 +3629,7 @@ class okx(Exchange, ImplicitAPI):
             'order_failed': 'canceled',
             'live': 'open',
             'partially_filled': 'open',
+            'partially_effective': 'open',
             'filled': 'closed',
             'effective': 'closed',
         }
