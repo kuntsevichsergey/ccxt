@@ -1,16 +1,9 @@
 # -*- coding: utf-8 -*-
 
-orjson = None
-try:
-    import orjson as orjson
-except ImportError:
-    pass
-
-import json
-
-from asyncio import sleep, ensure_future, wait_for, TimeoutError, BaseEventLoop, Future as asyncioFuture
-from .functions import milliseconds, iso8601, deep_extend, is_json_encoded_object
-from ccxt import NetworkError, RequestTimeout
+from asyncio import sleep, ensure_future, wait_for, TimeoutError
+from collections import defaultdict
+from .functions import milliseconds, iso8601, deep_extend
+from ccxt import NetworkError, RequestTimeout, NotSupported
 from ccxt.async_support.base.ws.future import Future
 from ccxt.async_support.base.ws.functions import gunzip, inflate
 from typing import Dict
@@ -73,8 +66,19 @@ class Client(object):
                 setattr(self, key, settings[key])
         # connection-related Future
         self.connected = Future()
+        self.orders_futures = defaultdict(list)
 
     def future(self, message_hash):
+        if message_hash.startswith("orders") or message_hash.startswith("orders-algo"):
+            if (
+                message_hash in self.orders_futures
+                and len(self.orders_futures[message_hash]) > 0
+            ):
+                future = self.orders_futures[message_hash].pop(0)
+            else:
+                future = Future()
+                self.orders_futures[message_hash].append(future)
+            return future
         if message_hash not in self.futures or self.futures[message_hash].cancelled():
             self.futures[message_hash] = Future()
         future = self.futures[message_hash]
@@ -84,6 +88,25 @@ class Client(object):
         return future
 
     def resolve(self, result, message_hash):
+        if message_hash == "orders" or message_hash == "orders-algo":
+            if len(self.orders_futures[message_hash]) > 0:
+                waited_futures = [
+                    future
+                    for future in self.orders_futures[message_hash]
+                    if not future.done()
+                ]
+                if len(waited_futures) > 0:
+                    future = waited_futures.pop(0)
+                    self.orders_futures[message_hash].remove(future)
+                    future.resolve(result)
+                else:
+                    future = Future()
+                    self.orders_futures[message_hash].append(future)
+                    future.resolve(result)
+            else:
+                future = Future()
+                self.orders_futures[message_hash].append(future)
+                future.resolve(result)
         if self.verbose and message_hash is None:
             self.log(iso8601(milliseconds()), 'resolve received None messageHash')
         if message_hash in self.futures:
@@ -98,10 +121,15 @@ class Client(object):
                 future = self.futures[message_hash]
                 future.reject(result)
                 del self.futures[message_hash]
+            elif message_hash in self.orders_futures:
+                futures = self.orders_futures[message_hash]
+                for future in futures:
+                    future.reject(result)
+                self.orders_futures[message_hash] = list()
             else:
                 self.rejections[message_hash] = result
         else:
-            message_hashes = list(self.futures.keys())
+            message_hashes = list(self.futures.keys()) + list(self.orders_futures.keys())
             for message_hash in message_hashes:
                 self.reject(result, message_hash)
         return result
