@@ -1775,9 +1775,8 @@ class bybit(ccxt.async_support.bybit):
         #         ]
         #     }
         #
-        if self.orders is None:
-            limit = self.safe_integer(self.options, 'ordersLimit', 1000)
-            self.orders = ArrayCacheBySymbolById(limit)
+        limit = self.safe_integer(self.options, 'ordersLimit', 1000)
+        self.orders = ArrayCacheBySymbolById(limit)
         orders = self.orders
         rawOrders = self.safe_value(message, 'data', [])
         first = self.safe_value(rawOrders, 0, {})
