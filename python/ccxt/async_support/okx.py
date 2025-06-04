@@ -3919,8 +3919,8 @@ class okx(Exchange, ImplicitAPI):
         paginate = False
         paginate, params = self.handle_option_and_params(params, 'fetchOpenOrders', 'paginate')
         if paginate:
-            return await self.fetch_paginated_call_dynamic('fetchOpenOrders', symbol, since, limit, params)
-        request: dict = {
+            return await self.fetch_paginated_call_dynamic('fetchOpenOrders', symbol, since, limit, params, maxEntriesPerRequest=100)
+        request = {
             # 'instType': 'SPOT',  # SPOT, MARGIN, SWAP, FUTURES, OPTION
             # 'uly': currency['id'],
             # 'instId': market['id'],
