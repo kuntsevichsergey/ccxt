@@ -3688,6 +3688,8 @@ class okx(Exchange, ImplicitAPI):
         market = self.safe_market(marketId, market)
         symbol = self.safe_symbol(marketId, market, '-')
         filled = self.safe_string(order, 'accFillSz')
+        if filled is None and type == "oco":
+            filled = self.safe_string(order, "actualSz")
         price = self.safe_string_2(order, 'px', 'ordPx')
         average = self.safe_string(order, 'avgPx')
         status = self.parse_order_status(self.safe_string(order, 'state'))
