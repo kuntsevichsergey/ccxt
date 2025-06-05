@@ -1,0 +1,9 @@
+[tool.poetry]
+name = "ccxt"
+version = "4.3.18"
+description = "Patched slim python version"
+authors = ["SK <kuntsevich.s@google.com>"]
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.13"
+
