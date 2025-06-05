@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ccxt"
-version = "4.3.18"
+version = "4.4.88"
 description = "Patched slim python version"
 authors = ["SK <kuntsevich.s@google.com>"]
 
