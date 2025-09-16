@@ -1,9 +1,17 @@
 # -*- coding: utf-8 -*-
 
-from asyncio import sleep, ensure_future, wait_for, TimeoutError
+orjson = None
+try:
+    import orjson as orjson
+except ImportError:
+    pass
+
+import json
+
+from asyncio import sleep, ensure_future, wait_for, TimeoutError, BaseEventLoop, Future as asyncioFuture
 from collections import defaultdict
-from .functions import milliseconds, iso8601, deep_extend
-from ccxt import NetworkError, RequestTimeout, NotSupported
+from .functions import milliseconds, iso8601, deep_extend, is_json_encoded_object
+from ccxt import NetworkError, RequestTimeout
 from ccxt.async_support.base.ws.future import Future
 from ccxt.async_support.base.ws.functions import gunzip, inflate
 from typing import Dict
